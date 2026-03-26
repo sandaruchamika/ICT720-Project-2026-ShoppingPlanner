@@ -1,0 +1,5 @@
+httpx
+flask
+motor
+pymongo
+python-dotenv
