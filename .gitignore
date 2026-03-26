@@ -1,0 +1,17 @@
+# Secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# PlatformIO build
+.pio/
+.pioenvs/
+
+# MongoDB data (ถ้า mount local)
+mongo-data/
+
+captures/
