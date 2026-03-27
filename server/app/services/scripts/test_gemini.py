@@ -13,10 +13,13 @@
 from PIL import Image
 from google import genai
 import sys
+from dotenv import load_dotenv
+import os
 
-API_KEY = "AIzaSyA8lMzrprXinbmmEJigUSP8kHbK1iRpKDY"
+load_dotenv(dotenv_path="../../infra/.env")  # ปรับ path ให้ตรงกับ structure
 
-client = genai.Client(api_key=API_KEY)
+API_KEY = os.getenv("GEMINI_API_KEY")
+client  = genai.Client(api_key=API_KEY)
 
 PROMPTS = {
     "general": """
