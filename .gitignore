@@ -1,4 +1,5 @@
 # Secrets
+infra/.env
 .env
 *.env
 
