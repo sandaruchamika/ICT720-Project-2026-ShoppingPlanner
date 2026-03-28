@@ -15,7 +15,8 @@ _lock         = Lock()
 _command      = "idle"
 _latest_image = None
 _last_ts      = None
-_last_analysis = None   # ← เพิ่ม
+_last_analysis = None
+_pending_mode  = "fridge_inventory"
 
 SAVE_DIR = Path("captures")
 SAVE_DIR.mkdir(exist_ok=True)
@@ -84,10 +85,9 @@ HTML = """
 
   <div class="controls">
     <select id="mode-select">
-      <option value="general">General</option>
-      <option value="security">Security</option>
-      <option value="shopping">Shopping</option>
-      <option value="thai">ภาษาไทย</option>
+      <option value="fridge_inventory">fridge_inventory</option>
+      <option value="shopping_recommendation">shopping_recommendation</option>
+      <option value="meal_suggestion">meal_suggestion</option>
     </select>
     <button class="btn" id="btn-capture" onclick="sendCapture()">Capture</button>
     <button class="btn" id="btn-reanalyze" onclick="reanalyze()">Re-analyze</button>
@@ -128,7 +128,11 @@ HTML = """
     async function sendCapture() {
       const mode = document.getElementById('mode-select').value;
       setStatus('กำลังส่งคำสั่ง...');
-      await fetch('/trigger', { method: 'POST' });
+      await fetch('/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode })
+      });
       setStatus('รอ device ถ่ายภาพ...');
       pollImage(mode);
     }
@@ -223,8 +227,11 @@ def command():
 
 @app.route("/trigger", methods=["POST"])
 def trigger():
+    body = request.get_json(silent=True) or {}
+    mode = body.get("mode", "fridge_inventory")
     with _lock:
         globals()['_command'] = "capture"
+        globals()['_pending_mode'] = mode
     return jsonify({"queued": True})
 
 
@@ -236,7 +243,8 @@ def upload():
 
     ts        = time.time()
     device_id = request.headers.get("X-Device-ID", "unknown")
-    mode      = request.headers.get("X-Mode", "general")
+    with _lock:
+        mode = globals()['_pending_mode']
 
     with _lock:
         globals()['_latest_image']  = data
