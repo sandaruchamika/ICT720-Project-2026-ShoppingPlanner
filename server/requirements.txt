@@ -5,3 +5,7 @@ pymongo
 python-dotenv
 Pillow
 google-genai
+python-telegram-bot 
+fastapi 
+uvicorn 
+requests
