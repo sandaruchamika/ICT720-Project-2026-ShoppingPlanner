@@ -3,3 +3,7 @@ flask
 motor
 pymongo
 python-dotenv
+python-telegram-bot 
+fastapi 
+uvicorn 
+requests
