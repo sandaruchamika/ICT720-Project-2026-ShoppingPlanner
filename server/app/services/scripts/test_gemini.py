@@ -1,14 +1,29 @@
-# from PIL import Image
 # from google import genai
+# import os
+# from dotenv import load_dotenv
 
-# client = genai.Client(api_key='AIzaSyA8lMzrprXinbmmEJigUSP8kHbK1iRpKDY.')
+# load_dotenv(dotenv_path="../../infra/.env")
+# API_KEY = os.getenv("GEMINI_API_KEY")
 
-# image = Image.open("C:/Users/NITRO V15/Desktop/ICT-720_Part2/mini-project/ICT720-Project-2026-ShoppingPlanner/server/app/captures/1774511004.jpg")
-# response = client.models.generate_content(
-#     model="gemini-3-flash-preview",
-#     contents=[image, "Tell me about this instrument"]
-# )
-# print(response.text)
+# client = genai.Client(api_key=API_KEY)
+
+# def list_available_models():
+#     print(f"{'Model Name':<50} | {'Display Name':<30} | {'Methods'}")
+#     print("-" * 110)
+    
+#     for model in client.models.list():
+#         name = getattr(model, 'name', 'N/A')
+#         display_name = getattr(model, 'display_name', 'N/A')
+        
+#         # รองรับทั้ง attribute name เก่าและใหม่
+#         methods = getattr(model, 'supported_generation_methods', None) \
+#                or getattr(model, 'supported_actions', [])
+#         methods_str = ", ".join(methods) if methods else "N/A"
+        
+#         print(f"{name:<50} | {display_name:<30} | {methods_str}")
+
+# if __name__ == "__main__":
+#     list_available_models()
 
 from PIL import Image
 from google import genai
@@ -64,7 +79,7 @@ def analyze(image_path: str, mode: str = "general"):
     print("-" * 50)
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",    # ← แก้ตรงนี้
+        model="gemini-2.0-flash",    # ← แก้ตรงนี้
         contents=[image, prompt]
     )
     print(response.text)
