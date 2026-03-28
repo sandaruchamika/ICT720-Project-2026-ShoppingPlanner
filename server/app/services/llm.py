@@ -3,50 +3,102 @@ from google import genai
 from io import BytesIO
 from dotenv import load_dotenv
 import os
+import json
 
-
-load_dotenv(dotenv_path="../../infra/.env")  # ปรับ path ให้ตรงกับ structure
+load_dotenv(dotenv_path="../../infra/.env")
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 client  = genai.Client(api_key=API_KEY)
 
 PROMPTS = {
-    "general": """
-        Analyze this image and describe:
-        1. What objects or people are visible
-        2. The environment or setting
-        3. Any unusual or notable things
-        Keep it concise within 3-4 sentences.
+
+    # ── PROMPT 1: Fridge Inventory ──────────────────────────────────────────
+    "fridge_inventory": """
+        You are a kitchen inventory assistant.
+        Look at this fridge image and identify every visible item.
+        Respond ONLY with a valid JSON array. No explanation, no markdown fences.
+        Each element must have exactly these fields:
+          "name"  : specific item name (e.g. "milk", "cheddar cheese")
+          "type"  : category — one of: dairy, vegetable, fruit, beverage, meat, condiment, leftovers, other
+          "count" : integer (estimate 1 if unclear)
+        Example: [{"name": "milk", "type": "dairy", "count": 1}]
+        Only include items you can clearly see.
     """,
-    "security": """
-        You are a security camera AI. Analyze this image:
-        1. How many people are present? What are they doing?
-        2. Any suspicious behavior or objects?
-        3. Overall safety assessment: NORMAL / WARNING / ALERT
-        Be concise and factual.
+
+    # ── PROMPT 2: Shopping Recommendations ─────────────────────────────────
+    "shopping_recommendation": """
+        You are a smart kitchen assistant helping a user restock their fridge.
+        Based on the fridge image provided, identify what is LOW, MISSING, or RUNNING OUT.
+
+        Consider common household essentials: eggs, milk, vegetables, fruits, protein (meat/tofu),
+        condiments, beverages, and leftovers.
+
+        Respond ONLY with a valid JSON object. No explanation, no markdown fences.
+        Use exactly this structure:
+        {
+          "low_stock": [
+            {"name": "item name", "reason": "only 1 left / nearly empty / etc."}
+          ],
+          "recommended_to_buy": [
+            {"name": "item name", "priority": "high/medium/low", "reason": "why to buy"}
+          ],
+          "tip": "one short practical kitchen tip based on what you see"
+        }
+
+        Be practical and helpful. Only recommend realistic grocery items.
     """,
-    "shopping": """
-        Analyze this image for shopping context:
-        1. What products or items are visible?
-        2. Estimate quantity or stock level if applicable
-        3. Any pricing or label information visible?
-        Be specific about product details.
-    """,
-    "thai": """
-        วิเคราะห์ภาพนี้:
-        1. มีอะไรในภาพบ้าง
-        2. มีคนหรือไม่ (ถ้ามี: กี่คน ทำอะไร)
-        3. มีสิ่งผิดปกติหรือไม่
-        ตอบสั้นๆ ภายใน 3-4 ประโยค
+
+    # ── PROMPT 3: Meal Suggestions ──────────────────────────────────────────
+    "meal_suggestion": """
+        You are a creative home chef assistant.
+        Look at the fridge image and suggest meals that can be made using the visible ingredients.
+
+        Respond ONLY with a valid JSON object. No explanation, no markdown fences.
+        Use exactly this structure:
+        {
+          "available_ingredients": ["ingredient1", "ingredient2"],
+          "meals": [
+            {
+              "name": "Meal name",
+              "difficulty": "easy/medium/hard",
+              "time_minutes": 20,
+              "ingredients_used": ["ingredient1", "ingredient2"],
+              "missing_ingredients": ["anything extra needed"],
+              "description": "One sentence about the dish"
+            }
+          ],
+          "fun_fact": "A short fun food fact related to the ingredients"
+        }
+
+        Suggest 3 meals ranging from simple to creative. Prioritize meals that use
+        ingredients that are close to expiring (e.g. leftovers, open packages).
     """,
 }
 
+
 def analyze_image(jpg_bytes: bytes, mode: str = "general") -> str:
     image  = Image.open(BytesIO(jpg_bytes))
-    prompt = PROMPTS.get(mode, PROMPTS["general"])
+    prompt = PROMPTS.get(mode, PROMPTS["fridge_inventory"])
 
     response = client.models.generate_content(
         model="gemini-2.5-flash",
         contents=[image, prompt]
     )
     return response.text
+
+
+def analyze_fridge(jpg_bytes: bytes) -> dict:
+    """
+    Run all 3 fridge-specific prompts and return structured results.
+    Returns dict with keys: inventory, recommendations, meals
+    """
+    results = {}
+
+    for key in ["fridge_inventory", "shopping_recommendation", "meal_suggestion"]:
+        raw = analyze_image(jpg_bytes, mode=key)
+        try:
+            results[key] = json.loads(raw)
+        except json.JSONDecodeError:
+            results[key] = {"raw": raw, "error": "Failed to parse JSON"}
+
+    return results
