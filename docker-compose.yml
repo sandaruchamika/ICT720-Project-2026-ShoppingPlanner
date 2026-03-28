@@ -27,6 +27,17 @@ services:
     networks:
       - app-net
 
+  telegram-bot:
+    build: ./telegram-bot
+    env_file:
+      - infra/.env
+    environment:
+      - FLASK_URL=http://server:5000
+    depends_on:
+      - server
+    networks:
+      - app-net
+
 volumes:
   mongo_data:
 

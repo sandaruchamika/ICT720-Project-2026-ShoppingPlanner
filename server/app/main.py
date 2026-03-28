@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_file, render_template_string
 from pymongo import MongoClient
 
-from services.llm import analyze_image
+from services.llm import analyze_image, suggest_dish
 
 load_dotenv(dotenv_path="../../infra/.env")
 
@@ -25,6 +25,7 @@ _latest_image = None
 _last_ts      = None
 _last_analysis = None
 _pending_mode  = "fridge_inventory"
+_pending_dish  = None
 
 SAVE_DIR = Path("captures")
 SAVE_DIR.mkdir(exist_ok=True)
@@ -217,6 +218,19 @@ HTML = """
 </html>
 """
 
+# ── background LLM task ────────────────────────────────────────────────────
+def run_llm(data: bytes, mode: str, ts: float, dish=None):
+    print(f"[llm] analyzing mode={mode} dish={dish}...")
+    if mode == "suggest_dish" and dish:
+        result = suggest_dish(data, dish)
+    else:
+        result = analyze_image(data, mode)
+    with _lock:
+        globals()['_last_analysis'] = result
+    _analyses.insert_one({"ts": ts, "mode": mode, "dish": dish, "analysis": result})
+    print(f"[llm] done: {result[:80]}...")
+
+
 # ── routes ─────────────────────────────────────────────────────────────────
 
 @app.route("/")
@@ -237,9 +251,11 @@ def command():
 def trigger():
     body = request.get_json(silent=True) or {}
     mode = body.get("mode", "fridge_inventory")
+    dish = body.get("dish", None)
     with _lock:
-        globals()['_command'] = "capture"
+        globals()['_command']      = "capture"
         globals()['_pending_mode'] = mode
+        globals()['_pending_dish'] = dish
     return jsonify({"queued": True})
 
 
@@ -253,6 +269,8 @@ def upload():
     device_id = request.headers.get("X-Device-ID", "unknown")
     with _lock:
         mode = globals()['_pending_mode']
+        dish = globals()['_pending_dish']
+        globals()['_pending_dish'] = None
 
     with _lock:
         globals()['_latest_image']  = data
@@ -264,16 +282,7 @@ def upload():
     fname.write_bytes(data)
     print(f"[upload] {device_id}  {len(data)} bytes → {fname}")
 
-    # วิเคราะห์ใน background thread (ไม่บล็อก response)
-    def run_llm():
-        print(f"[llm] analyzing mode={mode}...")
-        result = analyze_image(data, mode)
-        with _lock:
-            globals()['_last_analysis'] = result
-        _analyses.insert_one({"ts": ts, "analysis": result})
-        print(f"[llm] done: {result[:80]}...")
-
-    Thread(target=run_llm, daemon=True).start()
+    Thread(target=run_llm, args=(data, mode, ts, dish), daemon=True).start()
 
     return jsonify({"ok": True, "ts": ts})
 

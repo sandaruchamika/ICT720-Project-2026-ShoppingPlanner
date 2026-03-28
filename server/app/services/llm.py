@@ -87,6 +87,32 @@ def analyze_image(jpg_bytes: bytes, mode: str = "general") -> str:
     return response.text
 
 
+def suggest_dish(jpg_bytes: bytes, dish: str) -> str:
+    """Check fridge image for what's available/missing to make a specific dish."""
+    image  = Image.open(BytesIO(jpg_bytes))
+    prompt = f"""
+        The user wants to make: {dish}
+
+        Look at this fridge image and respond ONLY with a valid JSON object.
+        No explanation, no markdown fences.
+        {{
+            "dish": "{dish}",
+            "available_for_dish": ["ingredient1", "ingredient2"],
+            "missing": [
+                {{"name": "ingredient name", "substitute": "possible substitute or null"}}
+            ],
+            "can_make": true,
+            "tip": "one short cooking tip"
+        }}
+        Be realistic — only list ingredients clearly visible in the fridge.
+    """
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=[image, prompt]
+    )
+    return response.text
+
+
 def analyze_fridge(jpg_bytes: bytes) -> dict:
     """
     Run all 3 fridge-specific prompts and return structured results.
