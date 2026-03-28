@@ -4,9 +4,17 @@ from io import BytesIO
 from pathlib import Path
 from threading import Lock, Thread
 
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, send_file, render_template_string
+from pymongo import MongoClient
 
 from services.llm import analyze_image
+
+load_dotenv(dotenv_path="../../infra/.env")
+
+_mongo_client = MongoClient(os.getenv("MONGO_URI", "mongodb://localhost:27017/shoppingplanner"))
+_db           = _mongo_client.get_default_database()
+_analyses     = _db["analyses"]
 
 app = Flask(__name__)
 
@@ -262,6 +270,7 @@ def upload():
         result = analyze_image(data, mode)
         with _lock:
             globals()['_last_analysis'] = result
+        _analyses.insert_one({"ts": ts, "analysis": result})
         print(f"[llm] done: {result[:80]}...")
 
     Thread(target=run_llm, daemon=True).start()

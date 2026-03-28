@@ -7,3 +7,5 @@ python-telegram-bot
 fastapi 
 uvicorn 
 requests
+Pillow
+google-genai
