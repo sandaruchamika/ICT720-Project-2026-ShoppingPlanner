@@ -10,7 +10,7 @@
 #define AP_SSID           "ESP32-Config"
 #define AP_PASSWORD       "12345678"
 
-static uint8_t   jpg_buf[20480];
+static uint8_t   jpg_buf[65536];
 static String    g_ssid, g_password, g_server_ip;
 static WebServer server(80);
 Preferences      prefs;
