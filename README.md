@@ -388,10 +388,14 @@ Open Telegram, find your bot, and send `/start`.
 
 ## Team Roles
 
-Sophea Seng: Hardware & Embedded Engineer : Set up and program the LilyGO T-SimCam ESP32-S3 to connect to Wi-Fi, capture a photo when triggered, and send the image to the Python server
+Sophea Seng: Hardware & Embedded Engineer : Set up and program the LilyGO T-SimCam ESP32-S3 to connect to Wi-Fi, capture a photo when triggered, and send the image to the Python server.
+
 Pornpipat Varin: Backend API Developer : Build the central Python server that receives images from ESP32, routes them to the LLM, returns results, and connects all system components together.
+
 Siriviti Mohottige Sandaru Chamika Nanayakkara: AI / LLM Integration Engineer : Design prompts and integrate the LLM Vision API to analyze bottle images, then parse the output into clean structured data for the rest of the system to use.
+
 Myat Yi Aung: Database Engineer: Design and manage the database to store scan history, detected bottle data, and shopping suggestions — and provide query APIs for other modules to access.
+
 Ploypilin Prutpinit: Telegram Bot Developer : Build the Telegram Bot as the user interface — handling user commands, triggering the camera, and sending back analysis results and shopping suggestions.
 
 
