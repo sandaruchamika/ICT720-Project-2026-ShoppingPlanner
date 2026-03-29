@@ -9,6 +9,7 @@ A full-stack IoT system that uses an ESP32-S3 camera, a Python backend, Google G
 - [Scope and Objectives](#scope-and-objectives)
 - [User Stories](#user-stories)
 - [System Architecture](#system-architecture)
+- [Sequence Diagram](#sequence-diagram)
 - [Module Breakdown](#module-breakdown)
 - [Data Flow](#data-flow)
 - [Tools and Technologies](#tools-and-technologies)
@@ -74,6 +75,87 @@ This project develops a smart kitchen assistant that captures images of a fridge
 
 ![Shopping Planner Model Architecture](https://github.com/user-attachments/assets/0d8f72a0-a091-4b7c-8ec7-395e8862c6f0)
 
+
+---
+
+
+---
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    actor User as 👤 User
+    participant Bot as 🤖 Telegram Bot
+    participant Flask as 🖥️ Flask Server
+    participant ESP as 📷 ESP32-S3
+    participant Gemini as 🧠 Gemini AI
+    participant DB as 🗄️ MongoDB
+
+    Note over User,DB: Main Flow — /list Command (Fridge Inventory)
+
+    User->>Bot: 1. /list command
+    activate Bot
+    Bot->>Flask: 2. POST /trigger (mode=inventory)
+    activate Flask
+    Flask->>Flask: Set command state = "capture"
+    Flask-->>Bot: 200 OK
+    deactivate Flask
+
+    Note over Bot: Waiting for result...
+
+    loop Every 2 seconds
+        ESP->>Flask: 3. GET /command (polling)
+        Flask-->>ESP: "capture"
+    end
+
+    activate ESP
+    ESP->>ESP: 4. Capture JPEG via OV2640
+    ESP->>Flask: 5. POST /upload (JPEG image)
+    deactivate ESP
+
+    activate Flask
+    Flask->>Flask: Save image to captures/<timestamp>.jpg
+
+    rect rgb(200, 220, 255)
+        Note over Flask,DB: Background Thread — LLM Analysis
+        Flask->>Gemini: 6. Send image + prompt
+        activate Gemini
+        Gemini-->>Flask: 7. Structured JSON response
+        deactivate Gemini
+        Flask->>DB: 8. Insert analysis result
+        activate DB
+        DB-->>Flask: ACK
+        deactivate DB
+        Flask->>Flask: Update shared state (thread-safe)
+    end
+    deactivate Flask
+
+    Bot->>Flask: 9. GET /latest-image
+    activate Flask
+    Flask-->>Bot: 10. Analysis result (JSON)
+    deactivate Flask
+
+    Bot->>Bot: Format with emoji
+    Bot-->>User: 11. 📋 Inventory list
+    deactivate Bot
+
+    Note over User,DB: Alternative Flows
+
+    User->>Bot: /suggest <dish>
+    Bot->>Flask: POST /trigger (mode=dish_check, dish=<name>)
+    Note right of Flask: Same capture → analyse flow
+    Bot-->>User: ✅ Can make / ❌ Missing items
+
+    User->>Bot: /meals
+    Bot->>Flask: POST /trigger (mode=meals)
+    Note right of Flask: Same capture → analyse flow
+    Bot-->>User: 🍳 Meal suggestions
+
+    User->>Bot: /subscribe HH:MM
+    Bot->>Bot: Schedule weekly job (Saturday)
+    Bot-->>User: ✅ Subscribed
+
+```
 
 ---
 
