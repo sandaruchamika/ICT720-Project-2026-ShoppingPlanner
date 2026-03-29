@@ -15,6 +15,7 @@ A full-stack IoT system that uses an ESP32-S3 camera, a Python backend, Google G
 - [Tools and Technologies](#tools-and-technologies)
 - [Design Patterns](#design-patterns)
 - [Features](#features)
+- [Demo](#demo)
 - [Project Structure](#project-structure)
 - [Setup and Deployment](#setup-and-deployment)
 - [Environment Variables](#environment-variables)
@@ -305,6 +306,22 @@ Database access is encapsulated in server-side service functions, exposing clean
 
 ---
 
+---
+## Demo
+
+### Demo Screenshot
+![Demo Screenshot](images/demo.jpg)
+
+### Captured Image (ESP32-S3)
+![Captured Image](images/capture.jpg)
+
+### Telegram — Command /list
+![List Command](images/list.jpg)
+
+### Telegram — Command /suggest
+![Suggest Command](images/suggest.jpg)
+
+---
 ## Project Structure
 
 ```
