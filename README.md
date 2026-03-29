@@ -71,43 +71,8 @@ This project develops a smart kitchen assistant that captures images of a fridge
 
 ## System Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                          User Interfaces                            │
-│                                                                     │
-│   ┌──────────────────────┐          ┌───────────────────────────┐   │
-│   │    Telegram Bot       │          │      Flask Web UI         │   │
-│   │  (python-telegram-bot)│          │    (HTML/CSS/JS)          │   │
-│   └──────────┬───────────┘          └──────────┬────────────────┘   │
-└──────────────┼─────────────────────────────────┼────────────────────┘
-               │ HTTP (httpx)                     │
-               ▼                                  ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                     Central Python Server (Flask)                   │
-│                                                                     │
-│  ┌─────────────┐   ┌──────────────┐   ┌──────────────────────────┐  │
-│  │  REST API   │   │ Image Store  │   │  Background LLM Thread   │  │
-│  │  Endpoints  │   │  /captures   │   │  (Thread + Lock)         │  │
-│  └─────────────┘   └──────────────┘   └──────────────────────────┘  │
-│                                                                     │
-│  ┌─────────────────────────────────────────────────────────────┐   │
-│  │              Command State Manager (thread-safe)             │   │
-│  └─────────────────────────────────────────────────────────────┘   │
-└──────────┬──────────────────────────────────────┬──────────────────┘
-           │ HTTP Poll (/command)                  │ google-genai SDK
-           ▼                                       ▼
-┌────────────────────────┐           ┌─────────────────────────────┐
-│  ESP32-S3 Camera       │           │  Google Gemini 2.5 Flash     │
-│  (C++ / PlatformIO)    │           │  Vision API                  │
-│  WiFi AP+STA mode      │           │  (Structured JSON responses) │
-│  OV2640 camera module  │           └─────────────────────────────┘
-└────────────────────────┘
-                                     ┌─────────────────────────────┐
-                                     │  MongoDB 7                   │
-                                     │  Collection: analyses        │
-                                     │  (Motor async driver)        │
-                                     └─────────────────────────────┘
-```
+![Shopping Planner Model Architecture](https://github.com/user-attachments/assets/c6124481-76fc-4609-addf-ff0678b19c6a)
+
 
 ---
 
