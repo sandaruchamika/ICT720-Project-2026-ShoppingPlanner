@@ -71,7 +71,8 @@ This project develops a smart kitchen assistant that captures images of a fridge
 
 ## System Architecture
 
-![Shopping Planner Model Architecture](https://github.com/user-attachments/assets/c6124481-76fc-4609-addf-ff0678b19c6a)
+
+![Shopping Planner Model Architecture](https://github.com/user-attachments/assets/0d8f72a0-a091-4b7c-8ec7-395e8862c6f0)
 
 
 ---
@@ -126,44 +127,8 @@ This project develops a smart kitchen assistant that captures images of a fridge
 
 ## Data Flow
 
-```
-User sends /list command to Telegram Bot
-        │
-        ▼
-Bot POSTs to Flask /trigger (mode=inventory)
-        │
-        ▼
-Flask sets internal command state to "capture"
-        │
-        ▼
-ESP32 polls /command → receives "capture"
-        │
-        ▼
-ESP32 captures JPEG via OV2640 sensor
-        │
-        ▼
-ESP32 POSTs image to Flask /upload
-        │
-        ▼
-Flask stores image to captures/<timestamp>.jpg
-Flask spawns background thread for LLM analysis
-        │
-        ▼
-LLM thread sends image + prompt to Gemini Vision API
-        │
-        ▼
-Gemini returns structured JSON response
-        │
-        ▼
-Thread stores result in MongoDB (analyses collection)
-Thread updates shared in-memory state (thread-safe)
-        │
-        ▼
-Bot polls Flask /latest-image → retrieves result
-        │
-        ▼
-Bot formats result with emoji and sends to user
-```
+![Data Flow](https://github.com/user-attachments/assets/6267c15f-ec82-4120-a628-8eb097f02c5e)
+
 
 ---
 
