@@ -321,6 +321,12 @@ Database access is encapsulated in server-side service functions, exposing clean
 ### Telegram — Command /suggest
 ![Suggest Command](images/suggest.jpg)
 
+### Telegram - Demostration Video
+
+https://github.com/user-attachments/assets/21f7de46-2437-4737-afaf-5d48884c7c39
+
+
+
 ---
 ## Project Structure
 
