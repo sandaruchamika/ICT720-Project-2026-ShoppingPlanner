@@ -51,7 +51,7 @@ This project develops a smart kitchen assistant that captures images of a fridge
 
 | ID | As a user, I want to... | So that... | Telegram Command |
 |---|---|---|---|
-| US-01 | take a photo of my fridge via Telegram | the system can identify all visible items without me manually listing them | `/list` |
+| US-01 | take a photo of my fridge via Telegram | the system can identify all visible items without me manually listing them | `/image` |
 | US-02 | have the system detect item categories (e.g. milk, eggs, vegetables) | I understand the type and variety of what I currently have | `/list` |
 | US-03 | have the system count how many items of each type are present | I can track quantities and spot what is running low | `/list` |
 | US-04 | ask "What can I cook?" | I get meal ideas based only on what is already available in my fridge | `/meals` via Web | 
